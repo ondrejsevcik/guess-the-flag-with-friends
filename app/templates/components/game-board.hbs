@@ -7,7 +7,12 @@
   {{/each}}
 </div>
 
-<hr>
+<div class="progress-bar">
+  <span class="progress-bar__status">
+    {{currentFlagIndex}} / {{flags.length}}
+  </span>
+  <div class="progress-bar__bar" style="width: {{mult (div 100 flags.length) currentFlagIndex}}%"></div>
+</div>
 
 {{#if showResults}}
   <h1 class="h1">It's over!!</h1>

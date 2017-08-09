@@ -1,7 +1,11 @@
 import shuffle from './shuffle';
 
-export function getFlags() {
-  return shuffle(flags).slice(0,5);
+export function getFlags(count = 0) {
+  if (count < 1) {
+    return shuffle(flags);
+  }
+
+  return shuffle(flags).slice(0, count);
 }
 
 let flags = [
