@@ -11,3 +11,7 @@
 - [] (maybe) offline app
 - [] add about page
 - [] add tests
+
+## Publishing new version
+
+`ember github-pages:commit`
