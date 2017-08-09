@@ -1,0 +1,45 @@
+body {
+  background: #fff8ee;
+  padding: 10px;
+}
+
+.h1 {
+  text-align: center;
+}
+
+.welcome-heading {
+  text-align: center;
+  margin: 50px 0;
+}
+
+.button {
+  font-size: 2em;
+  color: white;
+  padding: 10px 10px;
+  background: green;
+  display: block;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.button + .button {
+  margin-top: 10px;
+}
+
+.game-board-players {
+  display: block;
+}
+
+.game-board-player {
+  display: inline;
+  padding: 5px;
+}
+
+.game-board-player__active {
+  background: #f9d695;
+}
+
+.game-board-img {
+  width: 100%;
+}

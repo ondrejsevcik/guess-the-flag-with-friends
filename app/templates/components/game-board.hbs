@@ -1,29 +1,24 @@
-Number of players {{numOfPlayers}}
-<br>
-Current player: {{get (get players (concat currentPlayerIndex)) "name"}}
-{{currentPlayerIndex}}
-<br>
-Scoreboard:<br>
-{{#each players as |player|}}
-  {{player.name}}: {{player.score}}
-{{/each}}
-<br>
+<div class="game-board-players">
+  {{#each players as |player index|}}
+    <div class="game-board-player {{if (eq index currentPlayerIndex) "game-board-player__active"}}">
+      <span>{{player.name}}</span>
+      <span>{{player.score}}</span>
+    </div>
+  {{/each}}
+</div>
+
+<hr>
+
 {{#if showResults}}
-It's over!!
-{{#link-to 'index'}}Start over{{/link-to}}
+  <h1 class="h1">It's over!!</h1>
+  {{#link-to 'setup' class="button"}}New game{{/link-to}}
 {{else if showQuestion}}
-  Guess the flag:
-  <br>
-  <img src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" />
-  <br>
-  <button {{action "reveal"}}>Show me</button>
+  <h1 class="h1">Guess the flag</h1>
+  <img class="game-board-img" src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" alt="Flag" />
+  <button {{action "reveal"}} class="button">Show me</button>
 {{else}}
-  <img src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" />
-  <br>
-  It's
-  <br>
+  <img class="game-board-img" src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" alt="Flag" />
   <h1>{{get (get flags (concat currentFlagIndex)) "countryName"}}</h1>
-  <br>
-  <button {{action 'correct'}}>I know</button>
-  <button {{action 'moveToNextQuestion'}}>Wrong</button>
+  <button {{action 'correct'}} class="button">I knew</button>
+  <button {{action 'moveToNextQuestion'}} class="button">Wrong</button>
 {{/if}}
