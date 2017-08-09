@@ -1,0 +1,29 @@
+Number of players {{numOfPlayers}}
+<br>
+Current player: {{get (get players (concat currentPlayerIndex)) "name"}}
+{{currentPlayerIndex}}
+<br>
+Scoreboard:<br>
+{{#each players as |player|}}
+  {{player.name}}: {{player.score}}
+{{/each}}
+<br>
+{{#if showResults}}
+It's over!!
+{{#link-to 'index'}}Start over{{/link-to}}
+{{else if showQuestion}}
+  Guess the flag:
+  <br>
+  <img src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" />
+  <br>
+  <button {{action "reveal"}}>Show me</button>
+{{else}}
+  <img src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" />
+  <br>
+  It's
+  <br>
+  <h1>{{get (get flags (concat currentFlagIndex)) "countryName"}}</h1>
+  <br>
+  <button {{action 'correct'}}>I know</button>
+  <button {{action 'moveToNextQuestion'}}>Wrong</button>
+{{/if}}
