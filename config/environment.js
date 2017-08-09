@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'lets-guess-flag',
+    modulePrefix: 'guess-the-flag-with-friends',
     environment: environment,
     rootURL: '/',
     locationType: 'auto',

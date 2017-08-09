@@ -1,7 +1,7 @@
 {
-  "name": "lets-guess-flag",
-  "version": "0.0.0",
-  "description": "Small description for lets-guess-flag goes here",
+  "name": "guess-the-flag-with-friends",
+  "version": "0.0.1",
+  "description": "Small description for guess-the-flag-with-friends goes here",
   "license": "MIT",
   "author": "",
   "directories": {
