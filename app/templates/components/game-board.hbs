@@ -1,30 +1,7 @@
-<div class="game-board-players">
-  {{#each players as |player index|}}
-    <div class="game-board-player {{if (eq index currentPlayerIndex) "game-board-player__active"}}">
-      <span>{{player.name}}</span>
-      <span>{{player.score}}</span>
-    </div>
-  {{/each}}
-</div>
-
-<div class="progress-bar">
-  <span class="progress-bar__status">
-    {{currentFlagIndex}} / {{flags.length}}
-  </span>
-  <div class="progress-bar__bar" style="width: {{mult (div 100 flags.length) currentFlagIndex}}%"></div>
-</div>
-
 {{#if showResults}}
   <h1 class="h1">It's over!!</h1>
   {{#link-to 'setup' class="button"}}New game{{/link-to}}
-{{else if showQuestion}}
-  <h1 class="h1">Guess the flag</h1>
-  <img class="game-board-img" src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" alt="Flag" />
-  <button {{action "reveal"}} class="button">Show me</button>
 {{else}}
-  <h1 class="h1">Guess the flag</h1>
-  <img class="game-board-img" src="{{get (get flags (concat currentFlagIndex)) "imgUrl"}}" alt="Flag" />
-  <h1>{{get (get flags (concat currentFlagIndex)) "countryName"}}</h1>
-  <button {{action 'correct'}} class="button">I knew</button>
-  <button {{action 'moveToNextQuestion'}} class="button">Wrong</button>
+  {{elm-component src=Elm.GameBoard}}
 {{/if}}
+
