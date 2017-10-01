@@ -16,19 +16,19 @@ main =
         }
 
 -- TODO:
--- results view
--- being able to select number of players
--- styles
+-- being able to select number of players (e.g routing)
 
 type Msg =
     ShowAnswer
     | CorrectAnswer
     | WrongAnswer
+    | NewGame
 
 
 type View
     = Question
     | Answer
+    | Results
 
 
 type alias Player =
@@ -56,6 +56,8 @@ init =
             , Player "💆 Monica" 0
             , Player "🙆 Phoebe's" 0
             ]
+
+        flags = List.take 10 Flags.flags
     in
         ( Model players 0 flags 0 Question, Cmd.none)
 
@@ -63,6 +65,9 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewGame ->
+           init
+
         ShowAnswer ->
             ( { model | view = Answer }, Cmd.none )
 
@@ -86,22 +91,26 @@ update msg model =
 
                         nextFlagIndex =
                             if (model.currentFlagIndex + 1) >= List.length model.flags then
-                              -- TODO: show results
-                              0
+                                0
                             else
                                 model.currentFlagIndex + 1
+
+                        nextView =
+                            if (model.currentFlagIndex + 1) >= List.length model.flags then
+                                Results
+                            else
+                                Question
                     in
-                        ( { model
+                        ({ model
                             | players = updatedPlayers
                             , currentPlayerIndex = nextPlayerIndex
                             , currentFlagIndex = nextFlagIndex
-                            , view = Question
+                            , view = nextView
                           }
-                        , Cmd.none
-                        )
+                        , Cmd.none)
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    (model, Cmd.none)
 
         WrongAnswer ->
             case List.Extra.getAt model.currentPlayerIndex model.players of
@@ -115,18 +124,21 @@ update msg model =
 
                         nextFlagIndex =
                             if (model.currentFlagIndex + 1) >= List.length model.flags then
-                              -- TODO: show results
                               0
                             else
                                 model.currentFlagIndex + 1
+
+                        nextView =
+                            if (model.currentFlagIndex + 1) >= List.length model.flags then
+                                Results
+                            else
+                                Question
                     in
                         ( { model
                             | currentPlayerIndex = nextPlayerIndex
                             , currentFlagIndex = nextFlagIndex
-                            , view = Question
-                          }
-                        , Cmd.none
-                        )
+                            , view = nextView
+                          }, Cmd.none)
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -155,8 +167,20 @@ view model =
                         , button [ type_ "button", class "button", onClick ShowAnswer ] [ text "Reveal" ]
                         ]
 
-                _ ->
-                  div [] []
+                (Results, _) ->
+                    div []
+                        [ h1 [ class "h1" ] [ text "And the winner is..." ]
+                        , case (List.head (List.reverse (List.sortBy .score model.players))) of
+                            Just player ->
+                              h2 [ class "h2" ] [ text player.name ]
+
+                            Nothing ->
+                              h2 [ class "h2" ] [ text "Oops, no winner!" ]
+                        , button [ class "button", onClick NewGame ] [ text "New game" ]
+                        ]
+
+                (_, Nothing) ->
+                    div [] []
     in
         div []
             [ div [ class "game-board-players" ]
