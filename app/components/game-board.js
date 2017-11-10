@@ -13,7 +13,7 @@ export default Ember.Component.extend({
 
   init() {
     this._super(...arguments);
-    this.flags = getFlags();
+    this.flags = getFlags(this.get('numOfFlags'));
     this.players = getPlayers(this.get('numOfPlayers'));
 
     this.currentPlayerIndex = 0;
