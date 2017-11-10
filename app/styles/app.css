@@ -18,8 +18,8 @@ body {
   font-size: 2em;
   color: white;
   padding: 10px 10px;
+  min-width: 20%;
   background: green;
-  display: block;
   text-decoration: none;
   text-align: center;
   cursor: pointer;

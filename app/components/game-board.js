@@ -2,7 +2,15 @@ import Ember from 'ember';
 import { getFlags } from '../utils/flags';
 import { getPlayers } from '../utils/players';
 
+const views = {
+  'QUESTION': 'QUESTION',
+  'ANSWER': 'ANSWER',
+  'RESULTS': 'RESULTS',
+};
+
 export default Ember.Component.extend({
+  view: views.QUESTION,
+
   init() {
     this._super(...arguments);
     this.flags = getFlags();
@@ -10,17 +18,14 @@ export default Ember.Component.extend({
 
     this.currentPlayerIndex = 0;
     this.currentFlagIndex = 0;
-
-    this.showQuestion = true;
-    this.showResults = false;
   },
 
   actions: {
-    reveal() {
-      this.toggleProperty('showQuestion');
+    revealAnswer() {
+      this.set('view', views.ANSWER);
     },
 
-    correct() {
+    correctAnswer() {
       let currentPlayer = this.get('players')[this.get('currentPlayerIndex')];
       Ember.set(currentPlayer, 'score', currentPlayer.score + 1);
 
@@ -34,10 +39,10 @@ export default Ember.Component.extend({
       this.set('currentPlayerIndex', currentPlayerIndex >= this.get('numOfPlayers') - 1 ? 0 : currentPlayerIndex + 1 );
 
       if (this.get('currentFlagIndex') >= this.get('flags').length) {
-        this.toggleProperty('showResults');
+        this.set('view', views.RESULTS);
+      } else {
+        this.set('view', views.QUESTION);
       }
-
-      this.toggleProperty('showQuestion');
     }
   }
 
