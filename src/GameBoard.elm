@@ -1,25 +1,28 @@
-port module GameBoard exposing (..)
+module GameBoard exposing (..)
 
+import Browser
+import Flags exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
-import Flags exposing (..)
 
 
 main =
-    Html.program
+    Browser.sandbox
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
         }
+
+
 
 -- TODO:
 -- being able to select number of players (e.g routing)
 
-type Msg =
-    ShowAnswer
+
+type Msg
+    = ShowAnswer
     | CorrectAnswer
     | WrongAnswer
     | NewGame
@@ -40,8 +43,8 @@ type alias Player =
 type alias Model =
     { players : List Player
     , currentPlayerIndex : Int
-    , flags: List Flag
-    , currentFlagIndex: Int
+    , flags : List Flag
+    , currentFlagIndex : Int
     , view : View
     }
 
@@ -51,22 +54,23 @@ init =
     let
         players =
             [ Player "😋 Joey" 0
-            , Player "🤠 Ross" 0
+            , Player "u1F920 Ross" 0
             , Player "👩 Rachel" 0
             , Player "💆 Monica" 0
-            , Player "🙆 Phoebe's" 0
+            , Player "🙆 Phoebe" 0
             ]
 
-        flags = List.take 10 Flags.flags
+        flags =
+            List.take 10 Flags.flags
     in
-        ( Model players 0 flags 0 Question, Cmd.none)
+    ( Model players 0 flags 0 Question, Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+update msg ( model, cmd ) =
     case msg of
         NewGame ->
-           init
+            init
 
         ShowAnswer ->
             ( { model | view = Answer }, Cmd.none )
@@ -76,12 +80,8 @@ update msg model =
                 Just player ->
                     let
                         updatedPlayers =
-                            Maybe.withDefault model.players
-                                (List.Extra.updateAt
-                                    model.currentPlayerIndex
-                                    (\p -> { p | score = p.score + 1 })
-                                    model.players
-                                )
+                            model.players
+                                |> List.Extra.updateAt model.currentPlayerIndex (\p -> { p | score = p.score + 1 })
 
                         nextPlayerIndex =
                             if (model.currentPlayerIndex + 1) >= List.length model.players then
@@ -101,16 +101,17 @@ update msg model =
                             else
                                 Question
                     in
-                        ({ model
-                            | players = updatedPlayers
-                            , currentPlayerIndex = nextPlayerIndex
-                            , currentFlagIndex = nextFlagIndex
-                            , view = nextView
-                          }
-                        , Cmd.none)
+                    ( { model
+                        | players = updatedPlayers
+                        , currentPlayerIndex = nextPlayerIndex
+                        , currentFlagIndex = nextFlagIndex
+                        , view = nextView
+                      }
+                    , Cmd.none
+                    )
 
                 Nothing ->
-                    (model, Cmd.none)
+                    ( model, Cmd.none )
 
         WrongAnswer ->
             case List.Extra.getAt model.currentPlayerIndex model.players of
@@ -124,7 +125,7 @@ update msg model =
 
                         nextFlagIndex =
                             if (model.currentFlagIndex + 1) >= List.length model.flags then
-                              0
+                                0
                             else
                                 model.currentFlagIndex + 1
 
@@ -134,23 +135,27 @@ update msg model =
                             else
                                 Question
                     in
-                        ( { model
-                            | currentPlayerIndex = nextPlayerIndex
-                            , currentFlagIndex = nextFlagIndex
-                            , view = nextView
-                          }, Cmd.none)
+                    ( { model
+                        | currentPlayerIndex = nextPlayerIndex
+                        , currentFlagIndex = nextFlagIndex
+                        , view = nextView
+                      }
+                    , Cmd.none
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
 
-view : Model -> Html Msg
-view model =
+
+view : ( Model, Cmd Msg ) -> Html Msg
+view ( model, cmd ) =
     let
         currentFlag =
-          List.Extra.getAt model.currentFlagIndex model.flags
+            List.Extra.getAt model.currentFlagIndex model.flags
+
         boardView =
-            case (model.view, currentFlag) of
-                (Answer, Just flag) ->
+            case ( model.view, currentFlag ) of
+                ( Answer, Just flag ) ->
                     div []
                         [ h1 [ class "h1" ] [ text "Guess the flag" ]
                         , h2 [ class "h2" ] [ text flag.countryName ]
@@ -159,7 +164,7 @@ view model =
                         , button [ type_ "button", class "button", onClick WrongAnswer ] [ text "Wrong" ]
                         ]
 
-                (Question, Just flag) ->
+                ( Question, Just flag ) ->
                     div []
                         [ h1 [ class "h1" ] [ text "Guess the flag" ]
                         , h2 [ class "h2" ] [ text "........" ]
@@ -167,46 +172,48 @@ view model =
                         , button [ type_ "button", class "button", onClick ShowAnswer ] [ text "Reveal" ]
                         ]
 
-                (Results, _) ->
+                ( Results, _ ) ->
                     div []
                         [ h1 [ class "h1" ] [ text "And the winner is..." ]
-                        , case (List.head (List.reverse (List.sortBy .score model.players))) of
+                        , case List.head (List.reverse (List.sortBy .score model.players)) of
                             Just player ->
-                              h2 [ class "h2" ] [ text player.name ]
+                                h2 [ class "h2" ] [ text player.name ]
 
                             Nothing ->
-                              h2 [ class "h2" ] [ text "Oops, no winner!" ]
+                                h2 [ class "h2" ] [ text "Oops, no winner!" ]
                         , button [ class "button", onClick NewGame ] [ text "New game" ]
                         ]
 
-                (_, Nothing) ->
+                ( _, Nothing ) ->
                     div [] []
     in
-        div []
-            [ div [ class "game-board-players" ]
-                (List.indexedMap (\i p -> viewPlayer i (model.currentPlayerIndex, p)) model.players)
-            , viewProgressBar model
-            , boardView
-            ]
-
-viewProgressBar model =
-   div [ class "progress-bar" ]
-       [ span [ class "progress-bar__status" ]
-           [ text ((toString model.currentFlagIndex) ++ " / " ++ (toString (List.length model.flags))) ]
-       , div [ class "progress-bar__bar"
-             , style [("width",  (toString ((100 / (toFloat (List.length model.flags))) * toFloat model.currentFlagIndex)) ++ "%") ]
-             ]
-             []
-       ]
-
-viewPlayer : Int -> (Int, Player) -> Html msg
-viewPlayer index (currentPlayerIndex, player) =
-    div [ classList [ ( "game-board-player", True ), ( "game-board-player__active", index == currentPlayerIndex ) ] ]
-        [ span [] [ text (player.name ++ " ") ]
-        , span [] [ text (toString player.score) ]
+    div []
+        [ div [ class "game-board-players" ]
+            (List.indexedMap (\i p -> viewPlayer i ( model.currentPlayerIndex, p )) model.players)
+        , viewProgressBar model
+        , boardView
         ]
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+viewProgressBar model =
+    let
+        width =
+            String.fromInt ((100 // List.length model.flags) * model.currentFlagIndex)
+    in
+    div [ class "progress-bar" ]
+        [ span [ class "progress-bar__status" ]
+            [ text (String.fromInt model.currentFlagIndex ++ " / " ++ String.fromInt (List.length model.flags)) ]
+        , div
+            [ class "progress-bar__bar"
+            , style "width" <| width ++ "%"
+            ]
+            []
+        ]
+
+
+viewPlayer : Int -> ( Int, Player ) -> Html msg
+viewPlayer index ( currentPlayerIndex, player ) =
+    div [ classList [ ( "game-board-player", True ), ( "game-board-player__active", index == currentPlayerIndex ) ] ]
+        [ span [] [ text (player.name ++ " ") ]
+        , span [] [ text (String.fromInt player.score) ]
+        ]
