@@ -31,6 +31,7 @@ type Screen
     | Question GameModel
     | Answer GameModel
     | Error String
+    | Results (List Player)
 
 
 type alias GameModel =
@@ -52,6 +53,7 @@ type Msg
     | StartGame Int Continent
     | ShowAnswer GameModel
     | MarkAsGood GameModel
+    | MarkAsBad GameModel
 
 
 type Continent
@@ -108,18 +110,51 @@ update msg ( model, cmd ) =
                 updatedPlayer =
                     { activePlayer | score = activePlayer.score + 1 }
 
-                newScreen =
-                    case otherPlayers of
-                        newActivePlayer :: newOtherPlayers ->
-                            Question
-                                { gameModel
-                                    | otherPlayers = newOtherPlayers ++ [ updatedPlayer ]
-                                    , activePlayer = newActivePlayer
-                                    , remainingFlags = List.drop 1 remainingFlags
-                                }
+                newRemainingFlags =
+                    List.drop 1 remainingFlags
 
-                        _ ->
-                            Error "There is not enough players"
+                newScreen =
+                    if List.length newRemainingFlags <= 0 then
+                        let
+                            allPlayers =
+                                otherPlayers ++ [ activePlayer ]
+                        in
+                        Results allPlayers
+                    else
+                        case otherPlayers of
+                            newActivePlayer :: newOtherPlayers ->
+                                Question
+                                    { gameModel
+                                        | otherPlayers = newOtherPlayers ++ [ updatedPlayer ]
+                                        , activePlayer = newActivePlayer
+                                        , remainingFlags = newRemainingFlags
+                                    }
+
+                            _ ->
+                                Error "There is not enough players"
+            in
+            ( { model | screen = newScreen }, Cmd.none )
+
+        MarkAsBad ({ activePlayer, otherPlayers, remainingFlags } as gameModel) ->
+            let
+                newRemainingFlags =
+                    List.drop 1 remainingFlags
+
+                newScreen =
+                    if List.length newRemainingFlags <= 0 then
+                        Results (otherPlayers ++ [ activePlayer ])
+                    else
+                        case otherPlayers of
+                            newActivePlayer :: newOtherPlayers ->
+                                Question
+                                    { gameModel
+                                        | otherPlayers = newOtherPlayers ++ [ activePlayer ]
+                                        , activePlayer = newActivePlayer
+                                        , remainingFlags = List.drop 1 remainingFlags
+                                    }
+
+                            _ ->
+                                Error "There is not enough players"
             in
             ( { model | screen = newScreen }, Cmd.none )
 
@@ -140,6 +175,9 @@ view ( model, cmd ) =
 
                 Error msg ->
                     viewError msg
+
+                Results players ->
+                    viewResults players
     in
     div []
         [ viewBoard
@@ -251,17 +289,20 @@ viewAnswer gameModel =
                 [ onClick <| MarkAsGood gameModel
                 ]
                 [ text "Good" ]
-
-            -- , button
-            --     [ onClick <| MarkAsGood gameModel
-            --     ]
-            --     [ text "Bad" ]
+            , button
+                [ onClick <| MarkAsBad gameModel
+                ]
+                [ text "Bad" ]
             ]
         ]
 
 
 viewError msg =
     div [] [ text <| "There was an error: " ++ msg ]
+
+
+viewResults players =
+    div [] [ text <| Debug.toString players ]
 
 
 
