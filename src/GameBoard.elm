@@ -1,12 +1,12 @@
 module GameBoard exposing (..)
 
 import Browser
+import Flags
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
-import Flags
 
 
 main =
@@ -256,7 +256,29 @@ viewQuestion gameModel =
 
 
 viewStats gameModel =
-    div [ classList [ ( "bg-yellow-light", True ) ] ] []
+    let
+        players =
+            [ gameModel.activePlayer ] ++ gameModel.otherPlayers
+
+        sortedPlayers =
+            List.sortBy .name players
+
+        playerElements =
+            sortedPlayers
+                |> List.map
+                    (\p ->
+                        div
+                            [ classList
+                                [ ( "bg-gold", p == gameModel.activePlayer )
+                                ]
+                            ]
+                            [ text <| p.name ++ " " ++ String.fromInt p.score ]
+                    )
+    in
+    div
+        [ classList [ ( "bg-yellow flex", True ) ]
+        ]
+        playerElements
 
 
 viewAnswer gameModel =
@@ -322,16 +344,12 @@ targetValueContinentDecoder =
 
                     -- "Africa" ->
                     --     Json.Decode.succeed Africa
-
                     -- "Asia" ->
                     --     Json.Decode.succeed Asia
-
                     -- "America" ->
                     --     Json.Decode.succeed America
-
                     -- "World" ->
                     --     Json.Decode.succeed World
-
                     _ ->
                         Json.Decode.fail ("Invalid Continent: " ++ val)
             )
