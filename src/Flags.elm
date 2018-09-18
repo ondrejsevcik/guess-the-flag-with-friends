@@ -1,6 +1,8 @@
-module Flags exposing (..)
+module Flags exposing (Continent(..), Flag, allContinents, continentToString, europeFlags, getFlagsForContinent)
 
 import Json.Decode as Decode
+
+
 
 -- = Africa
 -- | Asia
@@ -9,15 +11,19 @@ import Json.Decode as Decode
 -- | South America
 -- | All
 
-type alias Flag = 
-    { emojiFlag: String
-    , countryName: String 
+
+type alias Flag =
+    { emojiFlag : String
+    , countryName : String
     }
+
 
 type Continent
     = Europe
 
-allContinents = [ Europe ]
+
+allContinents =
+    [ Europe ]
 
 
 continentToString continent =
@@ -25,13 +31,16 @@ continentToString continent =
         Europe ->
             "Europe"
 
+
 getFlagsForContinent continent =
     case continent of
         Europe ->
             europeFlags
-    
+
+
 
 -- FLAGS DEFINITIONS
+
 
 europeFlags =
     [ { emojiFlag = "🇦🇱", countryName = "Albania" }

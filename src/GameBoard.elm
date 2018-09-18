@@ -1,4 +1,4 @@
-module GameBoard exposing (..)
+module GameBoard exposing (GameModel, Model, Msg(..), Player, ViewScreen(..), availablePlayers, init, main, targetValueContinentDecoder, update, view, viewAnswer, viewError, viewQuestion, viewResults, viewSetup, viewStats)
 
 import Browser
 import Flags
@@ -113,6 +113,7 @@ update msg ( model, cmd ) =
                                 otherPlayers ++ [ activePlayer ]
                         in
                         ViewResults allPlayers
+
                     else
                         case otherPlayers of
                             newActivePlayer :: newOtherPlayers ->
@@ -136,6 +137,7 @@ update msg ( model, cmd ) =
                 newScreen =
                     if List.length newRemainingFlags <= 0 then
                         ViewResults (otherPlayers ++ [ activePlayer ])
+
                     else
                         case otherPlayers of
                             newActivePlayer :: newOtherPlayers ->
@@ -172,9 +174,8 @@ view ( model, cmd ) =
                 ViewResults players ->
                     viewResults players
     in
-    div []
+    div [ class "bg-light-yellow mw6 pa2 center " ]
         [ viewBoard
-        , text <| Debug.toString model
         , node "link"
             [ href "https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.11.1/tachyons.min.css"
             , rel "stylesheet"
@@ -192,9 +193,9 @@ viewSetup numberOfPlayers selectedContinent =
                     (\index ->
                         button
                             [ onClick (UpdateSetup index selectedContinent)
+                            , class "f6 link dim br2 ph4 pv3 mb2 dib white"
                             , classList
-                                [ ( "f6 link dim br2 ph3 pv2 mb2 dib white", True )
-                                , ( "bg-dark-green", numberOfPlayers /= index )
+                                [ ( "bg-dark-green", numberOfPlayers /= index )
                                 , ( "bg-dark-blue", numberOfPlayers == index )
                                 ]
                             ]
@@ -213,15 +214,19 @@ viewSetup numberOfPlayers selectedContinent =
                     )
     in
     div []
-        [ h1 [] [ text "How many players?" ]
-        , div [] buttons
+        [ h1 [ classList [ ( "f2", True ) ] ]
+            [ text "How many players?" ]
+        , div [ class "" ] buttons
         , select
-            [ on "change" (Json.Decode.map (UpdateSetup numberOfPlayers) targetValueContinentDecoder) ]
+            [ on "change" (Json.Decode.map (UpdateSetup numberOfPlayers) targetValueContinentDecoder)
+            , class "mb3"
+            ]
             continentOptions
         , div []
             [ button
                 [ onClick <| StartGame numberOfPlayers selectedContinent
                 , disabled <| numberOfPlayers <= 0
+                , class "f3 link dim br2 ph4 pv3 mb2 dib white bg-red"
                 ]
                 [ text "Start game" ]
             ]
@@ -243,7 +248,7 @@ viewQuestion gameModel =
         []
         [ viewStats gameModel
         , div [] [ text "......." ]
-        , div []
+        , div [ style "font-size" "8rem" ]
             [ text flagEmoji
             ]
         , div []
@@ -268,7 +273,8 @@ viewStats gameModel =
                 |> List.map
                     (\p ->
                         div
-                            [ classList
+                            [ class "pa2"
+                            , classList
                                 [ ( "bg-gold", p == gameModel.activePlayer )
                                 ]
                             ]
@@ -276,8 +282,7 @@ viewStats gameModel =
                     )
     in
     div
-        [ classList [ ( "bg-yellow flex", True ) ]
-        ]
+        [ class "bg-yellow flex mb3" ]
         playerElements
 
 
@@ -296,7 +301,7 @@ viewAnswer gameModel =
         []
         [ viewStats gameModel
         , div [] [ text countryName ]
-        , div []
+        , div [ style "font-size" "8rem" ]
             [ text emojiFlag
             ]
         , div []
