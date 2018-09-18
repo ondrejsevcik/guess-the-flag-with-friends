@@ -23,16 +23,16 @@ main =
 
 
 type alias Model =
-    { screen : Screen
+    { screen : ViewScreen
     }
 
 
-type Screen
-    = Setup Int Flags.Continent
-    | Question GameModel
-    | Answer GameModel
-    | Error String
-    | Results (List Player)
+type ViewScreen
+    = ViewSetup Int Flags.Continent
+    | ViewQuestion GameModel
+    | ViewAnswer GameModel
+    | ViewError String
+    | ViewResults (List Player)
 
 
 type alias GameModel =
@@ -53,20 +53,20 @@ type Msg
     = UpdateSetup Int Flags.Continent
     | StartGame Int Flags.Continent
     | ShowAnswer GameModel
-    | MarkAsGood GameModel
-    | MarkAsBad GameModel
+    | MarkAsGoodAnswer GameModel
+    | MarkAsBadAnswer GameModel
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model <| Setup 0 Flags.Europe, Cmd.none )
+    ( Model <| ViewSetup 0 Flags.Europe, Cmd.none )
 
 
 update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 update msg ( model, cmd ) =
     case msg of
         UpdateSetup numberOfPlayers continent ->
-            ( { model | screen = Setup numberOfPlayers continent }, cmd )
+            ( { model | screen = ViewSetup numberOfPlayers continent }, cmd )
 
         StartGame numberOfPlayers continent ->
             let
@@ -83,7 +83,7 @@ update msg ( model, cmd ) =
                                 totalFlags =
                                     List.length remainingFlags
                             in
-                            Question
+                            ViewQuestion
                                 { otherPlayers = otherPlayers
                                 , activePlayer = activePlayer
                                 , remainingFlags = remainingFlags
@@ -91,14 +91,14 @@ update msg ( model, cmd ) =
                                 }
 
                         _ ->
-                            Error "There is not enough players"
+                            ViewError "There is not enough players"
             in
             ( { screen = screen }, Cmd.none )
 
         ShowAnswer gameModel ->
-            ( { model | screen = Answer gameModel }, Cmd.none )
+            ( { model | screen = ViewAnswer gameModel }, Cmd.none )
 
-        MarkAsGood ({ activePlayer, otherPlayers, remainingFlags } as gameModel) ->
+        MarkAsGoodAnswer ({ activePlayer, otherPlayers, remainingFlags } as gameModel) ->
             let
                 updatedPlayer =
                     { activePlayer | score = activePlayer.score + 1 }
@@ -112,11 +112,11 @@ update msg ( model, cmd ) =
                             allPlayers =
                                 otherPlayers ++ [ activePlayer ]
                         in
-                        Results allPlayers
+                        ViewResults allPlayers
                     else
                         case otherPlayers of
                             newActivePlayer :: newOtherPlayers ->
-                                Question
+                                ViewQuestion
                                     { gameModel
                                         | otherPlayers = newOtherPlayers ++ [ updatedPlayer ]
                                         , activePlayer = newActivePlayer
@@ -124,22 +124,22 @@ update msg ( model, cmd ) =
                                     }
 
                             _ ->
-                                Error "There is not enough players"
+                                ViewError "There is not enough players"
             in
             ( { model | screen = newScreen }, Cmd.none )
 
-        MarkAsBad ({ activePlayer, otherPlayers, remainingFlags } as gameModel) ->
+        MarkAsBadAnswer ({ activePlayer, otherPlayers, remainingFlags } as gameModel) ->
             let
                 newRemainingFlags =
                     List.drop 1 remainingFlags
 
                 newScreen =
                     if List.length newRemainingFlags <= 0 then
-                        Results (otherPlayers ++ [ activePlayer ])
+                        ViewResults (otherPlayers ++ [ activePlayer ])
                     else
                         case otherPlayers of
                             newActivePlayer :: newOtherPlayers ->
-                                Question
+                                ViewQuestion
                                     { gameModel
                                         | otherPlayers = newOtherPlayers ++ [ activePlayer ]
                                         , activePlayer = newActivePlayer
@@ -147,7 +147,7 @@ update msg ( model, cmd ) =
                                     }
 
                             _ ->
-                                Error "There is not enough players"
+                                ViewError "There is not enough players"
             in
             ( { model | screen = newScreen }, Cmd.none )
 
@@ -157,19 +157,19 @@ view ( model, cmd ) =
     let
         viewBoard =
             case model.screen of
-                Setup numberOfPlayers continent ->
+                ViewSetup numberOfPlayers continent ->
                     viewSetup numberOfPlayers continent
 
-                Question gameModel ->
+                ViewQuestion gameModel ->
                     viewQuestion gameModel
 
-                Answer gameModel ->
+                ViewAnswer gameModel ->
                     viewAnswer gameModel
 
-                Error msg ->
+                ViewError msg ->
                     viewError msg
 
-                Results players ->
+                ViewResults players ->
                     viewResults players
     in
     div []
@@ -301,11 +301,11 @@ viewAnswer gameModel =
             ]
         , div []
             [ button
-                [ onClick <| MarkAsGood gameModel
+                [ onClick <| MarkAsGoodAnswer gameModel
                 ]
                 [ text "Good" ]
             , button
-                [ onClick <| MarkAsBad gameModel
+                [ onClick <| MarkAsBadAnswer gameModel
                 ]
                 [ text "Bad" ]
             ]
